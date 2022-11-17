@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://www.gstatic.com/firebasejs/7.15.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.15.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.15.0/firebase-database.js"></script>
+    <title>BSOP - SUPER HIGH ROLLER</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,200;0,400;0,600;1,200;1,400;1,600&display=swap" rel="stylesheet"/>
+  </head>
+  
+
+
+  <script>
+
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBwsk1v7W2vyY3R3wi1oBOBEf00LbN4N-0",
+    authDomain: "betmidas-events.firebaseapp.com",
+    databaseURL: "https://betmidas-events-default-rtdb.firebaseio.com",
+    projectId: "betmidas-events",
+    storageBucket: "betmidas-events.appspot.com",
+    messagingSenderId: "608674081879",
+    appId: "1:608674081879:web:02d2e22d3aa6b106be8712",
+    measurementId: "G-Q1L0HRT9X7"
+}
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.database().ref('bsop');
+
+buscarApostas(); 
+
+function buscarApostas() {
+
+        var dados = firebase.database().ref('bsop');
+
+        dados.on('value', (snapshot) => {
+            const data = snapshot.val();
+            let arrApostas = Object.values(data);
+
+
+            document.getElementById('bet-history-table').innerHTML = "";
+            document.getElementById('bet-history').innerHTML = "";
+
+            arrApostas.forEach((aposta) => {
+
+                if (aposta.status == "Aguardando validação") {
+                    exibirApostaPendente(aposta);
+                }
+                
+                if (aposta.status == "Válida") {
+                    exibirApostaValida(aposta);
+                }
+                
+                if (aposta.status == "Rejeitada") {
+                    exibirApostaRejeitada(aposta);
+                }
+                
+            });
+
+        });
+}
+
+
+function alterarStatus(id)
+{
+  var novoStatus = prompt("Digite o novo status da aposta : ", "Digite aqui");
+  
+
+console.log(novoStatus);
+  if(novoStatus === null){
+    return;
+  } else {
+    alert("O status será atualizado para : " +  novoStatus );
+   
+    var updates = {};
+    updates['/bsop/' + id + '/status'] = novoStatus;
+    const teste =  firebase.database().ref().update(updates);
+  }
+}
+
+
+
+
+function exibirApostaPendente(aposta){
+
+ let aps = document.getElementById('bet-history-table').innerHTML;
+ document.getElementById('bet-history-table').innerHTML = `
+ 
+      <div class="card blue">
+        <h3>${aposta.usuario}</h3>
+        <p> <b>Valor da aposta:</b> R$ ${aposta.valor}</p>
+        <p> <b>Odd: </b>${aposta.odd}</p>
+        <p> <b>Estimativa de Prêmio: </b>R$ ${aposta.ganhos}</p>
+        <p> <b>Jogador:</b> ${aposta.aposta}</p>
+        <p> <b>Status:</b> ${aposta.status}</p>
+        <img class="image" src="settings.png" alt="Editar status" onclick="alterarStatus('${aposta.id}')" />
+      </div>`+ aps;
+}
+
+function exibirApostaValida(aposta){
+
+ let aps = document.getElementById('bet-history').innerHTML;
+ document.getElementById('bet-history').innerHTML = `
+ 
+      <div class="card green">
+        <h3>${aposta.usuario}</h3>
+        <p> <b>Valor da aposta:</b> R$ ${aposta.valor}</p>
+        <p> <b>Odd:</b> ${aposta.odd}</p>
+        <p> <b>Estimativa de Prêmio: </b>R$ ${aposta.ganhos}</p>
+        <p> <b>Jogador:</b> ${aposta.aposta}</p>
+        <p> <b>Status:</b> ${aposta.status}</p>        
+      </div>`+ aps;
+
+}
+
+function exibirApostaRejeitada(aposta){
+
+ let aps = document.getElementById('bet-history').innerHTML;
+ document.getElementById('bet-history').innerHTML = `
+  
+      <div class="card red">
+        <h3>${aposta.usuario}</h3>
+        <p> <b>Valor da aposta: </b> R$ ${aposta.valor}</p>
+        <p> <b>Odd: </b> ${aposta.odd}</p>
+        <p> <b>Estimativa de Prêmio: </b> R$ ${aposta.ganhos}</p>
+        <p> <b>Jogador:</b> ${aposta.aposta}</p>
+        <p> <b>Status:</b> ${aposta.status}</p>
+      </div>`+ aps;
+}
+
+
+  </script>
+
+
+
+  <style type="text/css">
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #fafafa;
+}
+ 
+.row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card {
+  border-radius: 5px;
+  box-shadow: 7px 7px 13px 0px rgba(50, 50, 50, 0.22);
+  padding: 30px;
+  margin: 20px;
+  width: 400px;
+  transition: all 0.3s ease-out;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  cursor: pointer;
+}
+ 
+.card p {
+  color: gray;
+  font-size: 16px;
+}
+ 
+.image {
+  float: right;
+  max-width: 100px;
+  max-height: 64px;
+  color:blue
+}
+
+.blue {
+  border-left: 3px solid #4895ff;
+}
+ 
+.green {
+  border-left: 3px solid #3bb54a;
+}
+ 
+.red {
+  border-left: 3px solid #b3404a;
+}
+  </style>
+
+
+  <body>
+    <h1>Apostas - BSOP</h1>
+    <hr><br/>
+    <h4>Opções de STATUS: <b>Válida</b>  /  <b>Rejeitada</b></h4>
+
+    <div class="row">  
+    
+        <div class="col-6" id="bet-history-table">
+        </div>
+        <div class="col-6" id="bet-history">
+        </div>
+    </div>
+ 
+  </body>
+</html>
